@@ -12,39 +12,51 @@ type FileServiceImpl struct {
 	FileUploadAdapter domain.FileUploadAdapter
 }
 
+func NewFileService(FileUploadAdapter domain.FileUploadAdapter) *FileServiceImpl {
+	return &FileServiceImpl{FileUploadAdapter}
+}
+
 func (s *FileServiceImpl) UploadFiles(files []domain.FileInfo) []string {
 	maxUpload := 4
 	uploadControl := make(chan struct{}, maxUpload)
 	defer close(uploadControl)
-	failedUploads := make([]string, 0)
-	failedUpload := make(chan string, maxUpload)
-
-	go func() {
-		defer close(failedUpload)
-		for fileName := range failedUpload {
-			failedUploads = append(failedUploads, fileName)
-		}
-	}()
+	failedUpload := make(chan []string, len(files))
+	defer close(failedUpload)
 
 	var wg sync.WaitGroup
+
 	for _, file := range files {
 		wg.Add(1)
 		uploadControl <- struct{}{}
-		fmt.Println(file.Name)
 		go s.upload(&wg, file, uploadControl, failedUpload)
 	}
+
 	wg.Wait()
 
-	return failedUploads
+	select {
+	case fails := <-failedUpload:
+		return fails
+	default:
+		return []string{}
+	}
 }
 
-func (s *FileServiceImpl) upload(waitGroup *sync.WaitGroup, file domain.FileInfo, uploadControl <-chan struct{}, failedUpload chan<- string) {
+func (s *FileServiceImpl) upload(waitGroup *sync.WaitGroup, file domain.FileInfo, uploadControl <-chan struct{}, failedUpload chan []string) {
 	defer func() {
 		waitGroup.Done()
 		<-uploadControl
 	}()
-	if err := s.FileUploadAdapter.Upload(context.TODO(), file.File, file.Name); err != nil {
-		failedUpload <- file.Name
+
+	err := s.FileUploadAdapter.Upload(context.TODO(), file.File, file.Name)
+	if err != nil {
+		fmt.Printf("Upload failed %s.\n %s\n", file.Name, err.Error())
+		select {
+		case failed := <-failedUpload:
+			failed = append(failed, file.Name)
+			failedUpload <- failed
+		default:
+			failedUpload <- []string{file.Name}
+		}
 		return
 	}
 }

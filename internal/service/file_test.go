@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"strings"
 	"sync"
@@ -42,29 +41,24 @@ func TestUploadFiles(t *testing.T) {
 		},
 	}
 
-	t.Run("should call s3 upload with correct values", func(t *testing.T) {
+	t.Run("should upload files successfully", func(t *testing.T) {
 		s3AdapterMock := new(S3AdapterMock)
 		s3AdapterMock.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-		SUT := FileServiceImpl{
-			FileUploadAdapter: s3AdapterMock,
-		}
+		SUT := NewFileService(s3AdapterMock)
 
 		failed := SUT.UploadFiles(files)
 
 		assert.Equal(t, len(failed), 0)
 	})
 
-	t.Run("should return failed files upload", func(t *testing.T) {
+	t.Run("should return all failed files upload", func(t *testing.T) {
 		s3AdapterMock := new(S3AdapterMock)
 		s3AdapterMock.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("fail"))
-
-		SUT := FileServiceImpl{
-			FileUploadAdapter: s3AdapterMock,
-		}
+		SUT := NewFileService(s3AdapterMock)
 
 		failed := SUT.UploadFiles(files)
-		fmt.Println(failed)
-		assert.Equal(t, 2, len(failed))
+
+		assert.Equal(t, 3, len(failed))
 	})
 }
 
@@ -78,13 +72,11 @@ func Test_upload(t *testing.T) {
 
 	t.Run("should call s3 upload with correct values", func(t *testing.T) {
 		s3AdapterMock.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		SUT := FileServiceImpl{
-			FileUploadAdapter: s3AdapterMock,
-		}
+		SUT := NewFileService(s3AdapterMock)
 
 		var awaitGroup sync.WaitGroup
 		uploadControl := make(chan struct{}, 50)
-		errorFileUpload := make(chan string, 4)
+		errorFileUpload := make(chan []string, 1)
 		defer close(uploadControl)
 		defer close(errorFileUpload)
 
@@ -99,13 +91,11 @@ func Test_upload(t *testing.T) {
 
 	t.Run("should write error when s3 upload fails", func(t *testing.T) {
 		s3AdapterMock.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("any")).Once()
-		SUT := FileServiceImpl{
-			FileUploadAdapter: s3AdapterMock,
-		}
+		SUT := NewFileService(s3AdapterMock)
 
 		var awaitGroup sync.WaitGroup
 		uploadControl := make(chan struct{}, 50)
-		errorFileUpload := make(chan string, 4)
+		errorFileUpload := make(chan []string, 1)
 		defer close(uploadControl)
 		defer close(errorFileUpload)
 
@@ -113,7 +103,7 @@ func Test_upload(t *testing.T) {
 		awaitGroup.Add(1)
 		go SUT.upload(&awaitGroup, fileInfo, uploadControl, errorFileUpload)
 		awaitGroup.Wait()
-
-		assert.Equal(t, <-errorFileUpload, "file.txt")
+		failed := <-errorFileUpload
+		assert.Equal(t, failed[0], "file.txt")
 	})
 }
