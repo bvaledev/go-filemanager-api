@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/bvaledev/go-filemanager/internal/domain"
 )
@@ -18,13 +19,18 @@ type S3AdapterImpl struct {
 	S3Bucket string
 }
 
+func NewS3Adapter(S3Client s3Client, S3Bucket string) *S3AdapterImpl {
+	return &S3AdapterImpl{S3Client, S3Bucket}
+}
+
 var _ domain.FileUploadAdapter = (*S3AdapterImpl)(nil)
 
 func (s *S3AdapterImpl) Upload(ctx context.Context, file io.Reader, filename string) error {
 	_, err := s.S3Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(s.S3Bucket),
-		Key:    aws.String(filename),
+		Key:    aws.String("go/" + filename),
 		Body:   file,
+		ACL:    types.ObjectCannedACLPublicRead,
 	})
 	return err
 }
