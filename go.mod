@@ -1,4 +1,4 @@
-module github.com/bvaledev/go-filemanager
+module github.com/bvaledev/go-filemanager-s3-chi
 
 go 1.21.0
 

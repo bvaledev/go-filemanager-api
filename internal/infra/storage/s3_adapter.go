@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/bvaledev/go-filemanager/internal/domain"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/domain"
 )
 
 type s3Client interface {

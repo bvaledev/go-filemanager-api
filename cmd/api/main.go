@@ -8,11 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/bvaledev/go-filemanager/configs"
-	"github.com/bvaledev/go-filemanager/internal/infra/storage"
-	"github.com/bvaledev/go-filemanager/internal/infra/web"
-	"github.com/bvaledev/go-filemanager/internal/infra/web/server"
-	"github.com/bvaledev/go-filemanager/internal/service"
+	"github.com/bvaledev/go-filemanager-s3-chi/configs"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/infra/storage"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/infra/web"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/infra/web/server"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/service"
 )
 
 func main() {

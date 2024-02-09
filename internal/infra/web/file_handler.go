@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/bvaledev/go-filemanager/internal/domain"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/domain"
 )
 
 type FileHandler struct {

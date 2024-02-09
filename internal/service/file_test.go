@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bvaledev/go-filemanager/internal/domain"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bvaledev/go-filemanager/internal/domain"
+	"github.com/bvaledev/go-filemanager-s3-chi/internal/domain"
 )
 
 type FileServiceImpl struct {
